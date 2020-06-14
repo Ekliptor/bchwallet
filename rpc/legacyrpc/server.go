@@ -157,6 +157,24 @@ func NewServer(opts *Options, walletLoader *wallet.Loader, listeners []net.Liste
 			server.websocketClientRPC(wsc)
 		}))
 
+	// Accept protocol buffer HTTP multipart POST requests
+	serveMux.Handle("/proto", throttledFn(opts.MaxPOSTClients,
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Connection", "close")
+			w.Header().Set("Content-Type", "application/protobuf")
+			//w.Header().Set("Content-Type", "application/json") // to not trigger download when opening in browser
+			r.Close = true
+
+			if err := server.checkAuthHeader(r); err != nil {
+				log.Warnf("Unauthorized client connection attempt")
+				jsonAuthFail(w)
+				return
+			}
+			server.wg.Add(1)
+			server.postClientProtoRPC(w, r)
+			server.wg.Done()
+		}))
+
 	for _, lis := range listeners {
 		server.serve(lis)
 	}

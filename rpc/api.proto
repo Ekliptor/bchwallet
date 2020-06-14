@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package walletrpc;
+option go_package = ".;walletrpc";
 
 service VersionService {
 	rpc Version (VersionRequest) returns (VersionResponse);
@@ -95,8 +96,14 @@ message AccountBalance {
 	int64 total_balance = 2;
 }
 
-message PingRequest {}
-message PingResponse {}
+message PingRequest {
+	uint32 demo_number = 1; // TODO remove
+	string demo_string = 2;
+}
+message PingResponse {
+	uint32 demo_number = 1; // TODO remove
+	string demo_string = 2;
+}
 
 message NetworkRequest {}
 message NetworkResponse {
